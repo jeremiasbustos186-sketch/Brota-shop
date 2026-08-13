@@ -52,7 +52,7 @@ export const productConverter: FirestoreDataConverter<Product> = {
       nameLower: data.nameLower ?? data.name.toLowerCase(),
       description: data.description ?? '',
       price: data.price,
-      category: data.category,
+      category: data.category as import('../../types').ProductCategory,
       imageUrl: data.imageUrl ?? '',
       stock: data.stock ?? 0,
       createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : null,

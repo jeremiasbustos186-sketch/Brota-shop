@@ -6,7 +6,6 @@ import { createOrder } from '../services/orderService'
 import { useCart } from '../contexts/cart/CartContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/Button'
-import { EmptyState } from '../components/ui/EmptyState'
 import type { OrderItem } from '../types'
 
 export function CheckoutPage() {
