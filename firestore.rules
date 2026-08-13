@@ -1,0 +1,61 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // El rol se lee de users/{uid}.role — NO del token de Auth
+    function isAdmin() {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── Usuarios ───────────────────────────────────────────────────────────────
+
+    match /users/{userId} {
+      // Cada usuario puede leer y editar solo su propio perfil
+      allow read, write: if isOwner(userId);
+      // Solo admin puede actualizar el rol
+      allow update: if isAdmin();
+    }
+
+    // ── Productos ──────────────────────────────────────────────────────────────
+
+    match /products/{productId} {
+      // Cualquiera puede leer (catálogo público)
+      allow read: if true;
+      // Solo admin puede escribir
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Órdenes ────────────────────────────────────────────────────────────────
+
+    match /orders/{orderId} {
+      // El customer crea órdenes vinculadas a su propio UID
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // Cada usuario lee solo sus órdenes; el admin lee todas
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      // El admin puede actualizar SOLO status y updatedAt (nunca el total ni los items)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'updatedAt']);
+
+      // Nadie puede eliminar órdenes (trazabilidad)
+      allow delete: if false;
+    }
+  }
+}
