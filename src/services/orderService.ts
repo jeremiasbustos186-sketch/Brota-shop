@@ -89,21 +89,22 @@ export async function createOrder(
   }
 
   // Pre-generar ID o reutilizar el que viene (para evitar duplicados en reintentos)
-  const ref = orderId
-    ? doc(db, 'orders', orderId).withConverter(orderConverter)
-    : doc(collection(db, 'orders')).withConverter(orderConverter)
+  // Nota: escribimos SIN converter para poder usar serverTimestamp() (FieldValue no es Date)
+  const bareRef = orderId
+    ? doc(db, 'orders', orderId)
+    : doc(collection(db, 'orders'))
 
-  await setDoc(ref, {
-    id: ref.id,
+  await setDoc(bareRef, {
     userId: input.userId,
     items: input.items,
     total: input.total,
     status: 'pending',
-    createdAt: null, // serverTimestamp lo reemplaza abajo
-  } as Order)
+    createdAt: serverTimestamp(), // timestamp real del servidor
+  })
 
-  // Re-leer para obtener el timestamp real del servidor
-  const saved = await getDoc(ref)
+  // Re-leer CON converter para obtener el tipo Order tipado
+  const typedRef = bareRef.withConverter(orderConverter)
+  const saved = await getDoc(typedRef)
   if (!saved.exists()) throw new Error('[createOrder] Error al leer la orden creada')
   return saved.data()
 }

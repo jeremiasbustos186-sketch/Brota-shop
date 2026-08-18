@@ -9,10 +9,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // El rol se lee de users/{uid}.role — NO del token de Auth
+    // UID hardcodeado para evitar get() en queries de lista (limitación de Firestore Rules).
+    // En producción esto se reemplazaría con Firebase custom claims via Admin SDK.
     function isAdmin() {
-      return isSignedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null
+        && request.auth.uid == "sNKY1M8Iedb1mPNuo3k4Dno79Wk1";
     }
 
     function isOwner(userId) {

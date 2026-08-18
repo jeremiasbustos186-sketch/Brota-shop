@@ -43,7 +43,8 @@ export function AdminOrdersPage() {
         ? await getOrdersByStatus(statusFilter)
         : await getAllOrders()
       setOrders(result)
-    } catch {
+    } catch (e) {
+      console.error('[AdminOrdersPage] Error cargando órdenes:', e)
       setError('No se pudieron cargar las órdenes.')
     } finally {
       setLoading(false)
