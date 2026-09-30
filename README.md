@@ -36,6 +36,18 @@ E-commerce de plantas con panel de administración completo, subida de imágenes
 
 ---
 
+## Capturas
+
+| Catálogo | Carrito |
+|---|---|
+| ![Catálogo](docs/catalogo.png) | ![Carrito](docs/carrito.png) |
+
+**Panel de administración**
+
+![Panel de administración](docs/admin.png)
+
+---
+
 ## Decisiones de arquitectura
 
 ### Subida segura a S3
